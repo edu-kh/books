@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>បញ្ជីសៀវភៅ</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #d5d7d6ec;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .hero {
+            background-color: #2c3e50;
+            color: white;
+            width: 100%;
+            padding: 1.2rem 1rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .hero h3 {
+            margin-top: 0;
+            font-size: 1.6rem;
+        }
+
+        .search-container {
+            position: relative;
+            max-width: 600px;
+            margin: -25px auto 0 auto;
+            width: 90%;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 16px 25px;
+            font-size: 1.1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 30px;
+            outline: none;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+
+        #searchInput:focus {
+            border-color: #3498db;
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.2);
+        }
+
+        #resultsContainer {
+            width: 90%;
+            max-width: 600px;
+            margin-top: 15px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            display: none; 
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .class-item {
+            padding: 15px 25px;
+            border-bottom: 1px solid #eee;
+            color: #333;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .class-item:last-child {
+            border-bottom: none;
+        }
+
+        .class-item:hover {
+            background-color: #f0f8ff;
+            color: #3498db;
+        }
+
+        .no-results {
+            padding: 20px;
+            text-align: center;
+            color: #888;
+            font-style: italic;
+        }
+
+        /* --- WIDE STUDENT PANEL STYLES --- */
+        .panel-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .student-panel {
+            background: rgba(234, 233, 233, 0.97);
+            width: 98%;
+            max-width: 1400px; 
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            max-height: 95vh;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .panel-header {
+            background: #3498db;
+            color: white;
+            padding: 18px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-header h2 {
+            margin: 0;
+            font-size: 1.3rem;
+        }
+
+        .close-btn {
+            font-size: 2rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .panel-content {
+            padding: 0;
+            overflow-x: auto;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .student-item {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding: 12px 15px;
+            min-width: max-content;
+        }
+
+        .student-item:hover {
+            background-color: #b8cde1;
+        }
+
+        /* Sticky Student Column */
+        .student-info {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            width: 150px;
+            flex-shrink: 0;
+            position: sticky;
+            left: 0;
+            background: rgb(236, 235, 235); 
+            z-index: 2;
+            padding-right: 5px;
+            box-shadow: 4px 0 6px -2px rgba(0,0,0,0.05);
+            font-size: 0.8rem;
+            border-radius: 6px;
+        }
+
+        .student-item:hover .student-info {
+            background-color: #fafafa;
+        }
+
+        .student-avatar {
+            width: 35px; height: 35px;
+            background: #eef7fe;
+            color: #3498db;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .student-name {
+            font-weight: 500;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Subjects Container */
+        .subjects-container {
+            display: flex;
+            gap: 12px;
+            padding-left: 10px;
+        }
+
+        .subject-attendance {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            min-width: 105px;
+        }
+
+        .subject-label {
+            font-size: 0.75rem;
+            color: #414141;
+            font-weight: bold;
+            text-transform: uppercase;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+        }
+
+        .attendance-select, .attendance-input {
+            padding: 6px;
+            border-radius: 20px;
+            border: 1px solid #ccc;
+            outline: none;
+            font-weight: 500;
+            font-size: 0.85rem;
+            width: 100%;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .attendance-select {
+            cursor: pointer;
+        }
+
+        .attendance-input {
+            background-color: #ffffff;
+            color: #333;
+            max-width: 120px;
+        }
+
+        .attendance-input:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        }
+
+        .attendance-select.no-select {
+            background-color: #f8f9fa;
+            color: #7f8c8d;
+            border-color: #dcdde1;
+        }
+
+        .attendance-select.attendant {
+            background-color: #e8f8f5;
+            color: #27ae60;
+            border-color: #27ae60;
+        }
+
+        .attendance-select.absent {
+            background-color: #fde8e8;
+            color: #e74c3c;
+            border-color: #e74c3c;
+        }
+
+        .panel-footer {
+            padding: 15px 25px;
+            background: #f8f9fa;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn {
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background 0.2s, opacity 0.2s;
+            color: white;
+        }
+
+        .pdf-btn {
+            background: #e74c3c;
+        }
+
+        .pdf-btn:hover {
+            background: #c0392b;
+        }
+
+        .excel-btn {
+            background: #1e8449;
+        }
+
+        .excel-btn:hover {
+            background: #145a32;
+        }
+
+        .save-btn {
+            background: #27ae60;
+            padding: 10px 25px;
+            font-size: 1rem;
+        }
+
+        .save-btn:hover {
+            background: #219150;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hero">
+        <h3>វិទ្យាស័យ ហ៊ុនសែន មិត្តភាព</h3>
+        <p>បញ្ជីខ្ចីសងសៀវភៅ ២០២៦~២០២៧</p>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="ស្វែងរកថ្នាក់ 7A, 7B,...">
+    </div>
+
+    <div id="resultsContainer"></div>
+
+    <!-- STUDENT PANEL -->
+    <div id="studentPanelOverlay" class="panel-overlay">
+        <div class="student-panel">
+            <div class="panel-header">
+                <h2 id="panelClassTitle">Class Roster</h2>
+                <span class="close-btn" id="closePanelBtn">&times;</span>
+            </div>
+
+            <div class="panel-content" id="studentListContainer"></div>
+
+            <div class="panel-footer">
+                <button class="btn pdf-btn" id="pdfBtn">PDF</button>
+                <button class="btn excel-btn" id="excelBtn">Excel</button>
+                <button class="btn save-btn" id="saveBtn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 📍 REPLACE WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzG_3qg7Im527TOi1BmfwVgM7Smw2jrBWv3nTZeVdbNlT5pQqYKilzXbzfWb8KhCOj8cQ/exec";
+
+        const subjects = [
+            "ខ្មែរ(ខ្ចី)","ខ្មែរ(សង)", "គណិត(ខ្ចី)", "គណិត(សង)", "សិក្សាសង្គម(ខ្ចី)", "សិក្សាសង្គម(សង)", "វិទ្យាសាស្ត្រ(ខ្ចី)",
+            "វិទ្យាសាស្ត្រ(សង)",  "អង់គ្លេស(ខ្ចី)", "អង់គ្លេស(សង)","ផ្សេងៗ"
+        ];
+
+        let classes = [];
+        let studentData = {}; 
+        let currentSelectedClass = "";
+        const attendanceData = {};
+
+        // Fetch Data from Google Apps Script Web App
+        async function loadDataFromAppsScript() {
+            try {
+                const response = await fetch(WEB_APP_URL);
+                studentData = await response.json();
+                classes = Object.keys(studentData);
+                console.log("Sheet data & attendance loaded successfully!");
+            } catch (error) {
+                console.error("Error loading sheet data:", error);
+                alert("Failed to load student data. Ensure WEB_APP_URL is correct.");
+            }
+        }
+
+        const searchInput = document.getElementById('searchInput');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const panelOverlay = document.getElementById('studentPanelOverlay');
+        const closePanelBtn = document.getElementById('closePanelBtn');
+        const panelClassTitle = document.getElementById('panelClassTitle');
+        const studentListContainer = document.getElementById('studentListContainer');
+        const saveBtn = document.getElementById('saveBtn');
+        const pdfBtn = document.getElementById('pdfBtn');
+        const excelBtn = document.getElementById('excelBtn');
+
+        searchInput.addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase().trim();
+            if (query === "") {
+                resultsContainer.style.display = 'none';
+                return;
+            }
+
+            const filteredClasses = classes.filter(c => c.toLowerCase().includes(query));
+            resultsContainer.innerHTML = '';
+
+            if (filteredClasses.length > 0) {
+                filteredClasses.forEach(className => {
+                    const div = document.createElement('div');
+                    div.className = 'class-item';
+                    div.textContent = className;
+                    
+                    div.addEventListener('click', () => {
+                        searchInput.value = '';
+                        resultsContainer.style.display = 'none';
+                        openStudentPanel(className);
+                    });
+                    
+                    resultsContainer.appendChild(div);
+                });
+            } else {
+                resultsContainer.innerHTML = '<div class="no-results">No classes found.</div>';
+            }
+            resultsContainer.style.display = 'block';
+        });
+
+        function openStudentPanel(className) {
+            currentSelectedClass = className;
+            panelClassTitle.textContent = `ថ្នាក់ទី ${className} 2026~2017`;
+            renderStudentList();
+            panelOverlay.style.display = 'flex';
+        }
+
+        function renderStudentList() {
+            studentListContainer.innerHTML = '';
+            const students = studentData[currentSelectedClass] || [];
+
+            if (!attendanceData[currentSelectedClass]) {
+                attendanceData[currentSelectedClass] = {};
+            }
+
+            students.forEach(student => {
+                const studentId = student.id;
+                const studentName = student.name;
+                const savedAttendanceObj = student.attendance || {};
+
+                const studentDiv = document.createElement('div');
+                studentDiv.className = 'student-item';
+
+                // Sticky Info
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'student-info';
+
+                const avatar = document.createElement('div');
+                avatar.className = 'student-avatar';
+                avatar.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                `;
+
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'student-name';
+                nameSpan.textContent = studentName;
+
+                infoDiv.appendChild(avatar);
+                infoDiv.appendChild(nameSpan);
+                studentDiv.appendChild(infoDiv);
+
+                // Subjects Container
+                const subjectsContainer = document.createElement('div');
+                subjectsContainer.className = 'subjects-container';
+
+                subjects.forEach(subject => {
+                    if (!attendanceData[currentSelectedClass][subject]) {
+                        attendanceData[currentSelectedClass][subject] = {};
+                    }
+
+                    const subjectBlock = document.createElement('div');
+                    subjectBlock.className = 'subject-attendance';
+
+                    const subjectLabel = document.createElement('span');
+                    subjectLabel.className = 'subject-label';
+                    subjectLabel.textContent = subject;
+
+                    // Load saved status from local user changes OR database
+                    if (attendanceData[currentSelectedClass][subject][studentId] === undefined) {
+                        const dbStatus = savedAttendanceObj[subject] || null;
+                        attendanceData[currentSelectedClass][subject][studentId] = dbStatus;
+                    }
+
+                    const currentStatus = attendanceData[currentSelectedClass][subject][studentId];
+
+                    // Render Text Input for "ផ្សេងៗ", Select Dropdown for others
+                    if (subject === "ផ្សេងៗ") {
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.className = 'attendance-input';
+                        input.placeholder = 'បញ្ចូល...';
+                        input.value = currentStatus || '';
+
+                        input.addEventListener('input', (e) => {
+                            const val = e.target.value.trim();
+                            attendanceData[currentSelectedClass][subject][studentId] = (val === '') ? null : val;
+                        });
+
+                        subjectBlock.appendChild(subjectLabel);
+                        subjectBlock.appendChild(input);
+                    } else {
+                        const select = document.createElement('select');
+                        select.className = 'attendance-select';
+
+                        const optNoSelect = document.createElement('option');
+                        optNoSelect.value = 'null';
+                        optNoSelect.textContent = 'ជ្រើសរើស';
+                        select.appendChild(optNoSelect);
+
+                        // Dynamic options based on subject type
+                        if (subject.includes('(សង)')) {
+                            const optBat = document.createElement('option');
+                            optBat.value = 'សង';
+                            optBat.textContent = 'សង';
+
+                            const optSong = document.createElement('option');
+                            optSong.value = 'បាត់';
+                            optSong.textContent = 'បាត់';
+
+                            select.appendChild(optBat);
+                            select.appendChild(optSong);
+                        } else {
+                            const optThmei = document.createElement('option');
+                            optThmei.value = 'ថ្មី';
+                            optThmei.textContent = 'ថ្មី';
+
+                            const optChas = document.createElement('option');
+                            optChas.value = 'ចាស់';
+                            optChas.textContent = 'ចាស់';
+
+                            select.appendChild(optThmei);
+                            select.appendChild(optChas);
+                        }
+
+                        const selectStatus = currentStatus || 'null';
+                        select.value = selectStatus;
+                        updateSelectColor(select, selectStatus);
+
+                        select.addEventListener('change', (e) => {
+                            const val = e.target.value;
+                            attendanceData[currentSelectedClass][subject][studentId] = (val === 'null') ? null : val;
+                            updateSelectColor(select, val);
+                        });
+
+                        subjectBlock.appendChild(subjectLabel);
+                        subjectBlock.appendChild(select);
+                    }
+
+                    subjectsContainer.appendChild(subjectBlock);
+                });
+
+                studentDiv.appendChild(subjectsContainer);
+                studentListContainer.appendChild(studentDiv);
+            });
+        }
+
+        function updateSelectColor(selectElement, status) {
+            selectElement.classList.remove('attendant', 'absent', 'no-select');
+            if (status === 'ថ្មី' || status === 'សង') {
+                selectElement.classList.add('attendant');
+            } else if (status === 'ចាស់' || status === 'បាត់') {
+                selectElement.classList.add('absent');
+            } else {
+                selectElement.classList.add('no-select');
+            }
+        }
+
+        pdfBtn.addEventListener('click', () => {
+            if (!currentSelectedClass) return;
+            const exportUrl = `${WEB_APP_URL}?action=exportPdf&sheetName=${encodeURIComponent(currentSelectedClass)}`;
+            window.open(exportUrl, '_blank');
+        });
+
+        excelBtn.addEventListener('click', () => {
+            if (!currentSelectedClass) return;
+            const exportUrl = `${WEB_APP_URL}?action=exportExcel&sheetName=${encodeURIComponent(currentSelectedClass)}`;
+            window.open(exportUrl, '_blank');
+        });
+
+        saveBtn.addEventListener('click', async () => {
+            const records = [];
+            const classObj = attendanceData[currentSelectedClass] || {};
+
+            for (const subject in classObj) {
+                for (const studentId in classObj[subject]) {
+                    const status = classObj[subject][studentId];
+                    if (status) {
+                        const studentObj = (studentData[currentSelectedClass] || []).find(s => s.id == studentId);
+                        const sName = studentObj ? studentObj.name : "";
+                        records.push({ 
+                            studentId: Number(studentId), 
+                            studentName: sName, 
+                            subject: subject, 
+                            status: status 
+                        });
+                    }
+                }
+            }
+
+            if (records.length === 0) {
+                alert('Please select attendance status for at least one student.');
+                return;
+            }
+
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+
+            try {
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ className: currentSelectedClass, records: records }),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                });
+
+                const res = await response.json();
+
+                if (res.success) {
+                    alert(`Successfully saved ${res.count} records!`);
+                    await loadDataFromAppsScript();
+                    panelOverlay.style.display = 'none';
+                } else {
+                    alert('Error saving data: ' + res.error);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Failed to save data. Check browser console.');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save';
+            }
+        });
+
+        closePanelBtn.addEventListener('click', () => panelOverlay.style.display = 'none');
+        panelOverlay.addEventListener('click', (e) => {
+            if (e.target === panelOverlay) panelOverlay.style.display = 'none';
+        });
+
+        loadDataFromAppsScript();
+    </script>
+</body>
+</html>

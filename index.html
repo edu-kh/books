@@ -400,6 +400,37 @@
             opacity: 0.6;
             cursor: not-allowed;
         }
+
+        /* --- CUSTOM POPUP STYLES --- */
+        .popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .popup-box {
+            background: white;
+            padding: 25px 30px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            animation: slideIn 0.3s ease-out;
+            font-family: 'Battambang', sans-serif;
+        }
+
+        .popup-box p {
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
@@ -408,6 +439,14 @@
     <div id="pageLoader" class="loader-overlay">
         <div class="spinner"></div>
         <div class="loader-text">សូមរង់ចាំ....</div>
+    </div>
+
+    <!-- CUSTOM POPUP OVERLAY -->
+    <div id="customPopup" class="popup-overlay">
+        <div class="popup-box">
+            <p id="popupMessage"></p>
+            <button class="btn save-btn" onclick="closePopup()">OK</button>
+        </div>
     </div>
 
     <div class="hero">
@@ -440,6 +479,16 @@
     </div>
 
     <script>
+        // Custom Pop-up Functions
+        function showPopup(message) {
+            document.getElementById('popupMessage').textContent = message;
+            document.getElementById('customPopup').style.display = 'flex';
+        }
+
+        function closePopup() {
+            document.getElementById('customPopup').style.display = 'none';
+        }
+
         // 📍 REPLACE WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzG_3qg7Im527TOi1BmfwVgM7Smw2jrBWv3nTZeVdbNlT5pQqYKilzXbzfWb8KhCOj8cQ/exec";
 
@@ -463,7 +512,7 @@
                 console.log("Sheet data & attendance loaded successfully!");
             } catch (error) {
                 console.error("Error loading sheet data:", error);
-                alert("Failed to load student data. Ensure WEB_APP_URL is correct.");
+                showPopup("Failed to load student data. Ensure WEB_APP_URL is correct.");
             } finally {
                 // Hide loader once the data fetch is complete
                 if (loader) {
@@ -702,12 +751,12 @@
             }
 
             if (records.length === 0) {
-                alert('Please select attendance status for at least one student.');
+                showPopup('Please select attendance status for at least one student.');
                 return;
             }
 
             saveBtn.disabled = true;
-            saveBtn.textContent = 'Saving...';
+            saveBtn.innerHTML = 'Saving... <i class="fa-solid fa-spinner fa-spin"></i>';
 
             try {
                 const response = await fetch(WEB_APP_URL, {
@@ -719,18 +768,18 @@
                 const res = await response.json();
 
                 if (res.success) {
-                    alert(`Successfully saved ${res.count} records!`);
+                    showPopup(`Successfully saved  Thanks!`);
                     await loadDataFromAppsScript();
                     panelOverlay.style.display = 'none';
                 } else {
-                    alert('Error saving data: ' + res.error);
+                    showPopup('Error saving data: ' + res.error);
                 }
             } catch (err) {
                 console.error(err);
-                alert('Failed to save data. Check browser console.');
+                showPopup('Failed to save data. Check browser console.');
             } finally {
                 saveBtn.disabled = false;
-                saveBtn.textContent = 'Save';
+               saveBtn.innerHTML = 'Save <i class="fa-solid fa-book"></i>';
             }
         });
 

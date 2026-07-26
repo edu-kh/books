@@ -676,42 +676,54 @@
             downloadOverlay.style.display = 'none';
         }
 
-        // Fetches the real docs.google.com export URL from Apps Script (returned
-        // as plain text via ContentService, which is CORS-friendly — same path
-        // that already works for the JSON data load).
-        async function resolveExportUrl(action, sheetName) {
-            const scriptUrl = `${WEB_APP_URL}?action=${action}&sheetName=${encodeURIComponent(sheetName)}`;
-            const response = await fetch(scriptUrl);
-            const url = (await response.text()).trim();
-            if (!url || !url.startsWith('http')) {
-                throw new Error('Could not resolve the download link.');
-            }
-            return url;
-        }
+       // Extracts the Google direct export URL from Google Apps Script
+async function resolveExportUrl(action, sheetName) {
+    const scriptUrl = `${WEB_APP_URL}?action=${action}&sheetName=${encodeURIComponent(sheetName)}`;
+    const response = await fetch(scriptUrl);
+    const directUrl = await response.text();
 
+    if (!directUrl || !directUrl.startsWith('http')) {
+        throw new Error('Could not resolve the download link.');
+    }
+    return directUrl.trim();
+}
+
+// Triggers download directly in the same tab
+async function triggerDownload(action, type, sheetName) {
+    showDownloadOverlay(type);
+
+    try {
+        const directUrl = await resolveExportUrl(action, sheetName);
+        
+        // Triggers native mobile download prompt without opening a new tab
+        window.location.href = directUrl;
+
+    } catch (err) {
+        console.error(err);
+        showPopup('Download failed. Please check your internet and try again!');
+    } finally {
+        setTimeout(hideDownloadOverlay, 1500);
+    }
+}
         // Triggers a file download. Once the real Google file URL is resolved
         // via fetch, a temporary link is clicked to request it. Google's export
         // endpoint responds with Content-Disposition: attachment, so the browser
         // just downloads the file and stays on this page — no new tab, no
         // navigation away, and the script.google.com URL is never shown.
-        async function triggerDownload(action, type, sheetName) {
-            showDownloadOverlay(type);
+      async function triggerDownload(action, type, sheetName) {
+    showDownloadOverlay(type);
 
-            try {
-                const directUrl = await resolveExportUrl(action, sheetName);
-                const link = document.createElement('a');
-                link.href = directUrl;
-                link.rel = 'noopener';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            } catch (err) {
-                console.error(err);
-                showPopup('Download failed. Please check your internet and try again!');
-            } finally {
-                setTimeout(hideDownloadOverlay, 600);
-            }
-        }
+    try {
+        const directUrl = await resolveExportUrl(action, sheetName);
+        // Direct location change works reliably on both iOS and Android
+        window.location.href = directUrl;
+    } catch (err) {
+        console.error(err);
+        showPopup('Download failed. Please check your internet and try again!');
+    } finally {
+        setTimeout(hideDownloadOverlay, 1000);
+    }
+}
 
         searchInput.addEventListener('input', function(e) {
             const query = e.target.value.toLowerCase().trim();

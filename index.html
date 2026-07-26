@@ -73,81 +73,6 @@
         }
         /* ------------------------- */
 
-        /* --- DOWNLOAD POPUP STYLES --- */
-        .download-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.55);
-            z-index: 10000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .download-box {
-            background: #ffffff;
-            border-radius: 18px;
-            padding: 35px 45px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.25);
-            animation: popIn 0.25s ease-out;
-            min-width: 240px;
-        }
-
-        @keyframes popIn {
-            from { transform: scale(0.85); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-
-        .download-icon-wrap {
-            position: relative;
-            width: 70px;
-            height: 70px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .download-icon-wrap i {
-            font-size: 2.2rem;
-            color: #3498db;
-            animation: bounceDown 1s infinite ease-in-out;
-            z-index: 2;
-        }
-
-        .download-icon-wrap::after {
-            content: '';
-            position: absolute;
-            bottom: 6px;
-            width: 70px;
-            height: 70px;
-            border: 5px solid #e0e0e0;
-            border-top: 5px solid #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes bounceDown {
-            0%, 100% { transform: translateY(-6px); opacity: 0.7; }
-            50% { transform: translateY(4px); opacity: 1; }
-        }
-
-        .download-text {
-            font-family: "Battambang", sans-serif;
-            color: #2c3e50;
-            font-size: 1.1rem;
-            font-weight: bold;
-            text-align: center;
-            animation: pulse 1.5s infinite ease-in-out;
-        }
-        /* ------------------------- */
-
         .hero {
             background-color: #2c3e50;
             color: white;
@@ -522,16 +447,6 @@
         <div class="loader-text">សូមរង់ចាំ....</div>
     </div>
 
-    <!-- DOWNLOAD POPUP OVERLAY -->
-    <div id="downloadOverlay" class="download-overlay">
-        <div class="download-box">
-            <div class="download-icon-wrap">
-                <i class="fa-solid fa-download"></i>
-            </div>
-            <div class="download-text" id="downloadOverlayText">កំពុងទាញយក....</div>
-        </div>
-    </div>
-
     <!-- CUSTOM POPUP OVERLAY -->
     <div id="customPopup" class="popup-overlay">
         <div class="popup-box">
@@ -580,41 +495,8 @@
             document.getElementById('customPopup').style.display = 'none';
         }
 
-        // Download popup (used for PDF/Excel export so no new tab / script URL is ever shown)
-        function showDownloadPopup(message) {
-            document.getElementById('downloadOverlayText').textContent = message;
-            document.getElementById('downloadOverlay').style.display = 'flex';
-        }
-
-        function hideDownloadPopup() {
-            document.getElementById('downloadOverlay').style.display = 'none';
-        }
-
-        function triggerHiddenDownload(url, message, hideDelay) {
-            showDownloadPopup(message);
-
-            fetch(url)
-                .then(function (res) { return res.json(); })
-                .then(function (data) {
-                    if (data && data.url) {
-                        // Navigating directly to a file with Content-Disposition:
-                        // attachment triggers a browser download in place —
-                        // it does not open a tab or change the visible page.
-                        window.location.href = data.url;
-                    } else {
-                        showPopup('មិនអាចទាញយកឯកសារបានទេ សូមព្យាយាមម្តងទៀត។');
-                    }
-                })
-                .catch(function () {
-                    showPopup('មានបញ្ហាក្នុងការទាញយកឯកសារ។');
-                })
-                .finally(function () {
-                    setTimeout(hideDownloadPopup, hideDelay || 1200);
-                });
-        }
-
         // 📍 REPLACE WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyR7t7vQV92HgziKsnZl7Plq22l3EQ8BBs6SS-jrY7SoxRiV-KNic2_s_NKTTtGoaDIYQ/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwJHCQwVyE-9TvRT_udmsUv5JiH3p0K41Fa8OZUiAcxt8YD1t3_EF7HLPWj_DdOECZZ6Q/exec";
 
         const subjects = [
             "ខ្មែរ(ខ្ចី)","ខ្មែរ(សង)", "គណិត(ខ្ចី)", "គណិត(សង)", "សិក្សាសង្គម(ខ្ចី)", "សិក្សាសង្គម(សង)", "វិទ្យាសាស្ត្រ(ខ្ចី)",
@@ -643,7 +525,7 @@
                     loader.style.opacity = '0';
                     setTimeout(() => {
                         loader.style.display = 'none';
-                    }, 300); // Wait for transition to complete
+                    }, 400); // Wait for transition to complete
                 }
             }
         }
@@ -844,13 +726,13 @@
         pdfBtn.addEventListener('click', () => {
             if (!currentSelectedClass) return;
             const exportUrl = `${WEB_APP_URL}?action=exportPdf&sheetName=${encodeURIComponent(currentSelectedClass)}`;
-            triggerHiddenDownload(exportUrl, 'កំពុងទាញយក PDF....');
+            window.open(exportUrl, '_blank');
         });
 
         excelBtn.addEventListener('click', () => {
             if (!currentSelectedClass) return;
             const exportUrl = `${WEB_APP_URL}?action=exportExcel&sheetName=${encodeURIComponent(currentSelectedClass)}`;
-            triggerHiddenDownload(exportUrl, 'កំពុងទាញយក Excel....');
+            window.open(exportUrl, '_blank');
         });
 
       saveBtn.addEventListener('click', async () => {

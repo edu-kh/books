@@ -675,8 +675,15 @@
         function hideDownloadOverlay() {
             downloadOverlay.style.display = 'none';
         }
+// Detect if opened inside Telegram, Facebook, Messenger, Instagram, or Line
+function isInAppBrowser() {
+    const ua = navigator.userAgent || navigator.vendor || window.opera;
+    return (ua.includes("FBAN") || ua.includes("FBAV") || 
+            ua.includes("Telegram") || ua.includes("Line") || 
+            ua.includes("Instagram"));
+}
 
-       // Extracts the Google direct export URL from Google Apps Script
+// Extracts direct export URL from Google Apps Script
 async function resolveExportUrl(action, sheetName) {
     const scriptUrl = `${WEB_APP_URL}?action=${action}&sheetName=${encodeURIComponent(sheetName)}`;
     const response = await fetch(scriptUrl);
@@ -688,15 +695,26 @@ async function resolveExportUrl(action, sheetName) {
     return directUrl.trim();
 }
 
-// Triggers download directly in the same tab
+// Mobile-optimized download trigger (Same Tab)
 async function triggerDownload(action, type, sheetName) {
+    // Alert user if they are using Telegram/Facebook built-in browser
+    if (isInAppBrowser()) {
+        showPopup('In-app browsers (Telegram/Facebook) block downloads. Please tap the top menu (⋮ or ...) and select "Open in Chrome" or "Open in Safari"!');
+        return;
+    }
+
     showDownloadOverlay(type);
 
     try {
         const directUrl = await resolveExportUrl(action, sheetName);
-        
-        // Triggers native mobile download prompt without opening a new tab
-        window.location.href = directUrl;
+
+        // Mobile Safari / Chrome reliable download element
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.href = directUrl;
+        downloadAnchor.target = '_self'; // Ensures no new tab opens
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        document.body.removeChild(downloadAnchor);
 
     } catch (err) {
         console.error(err);
@@ -705,26 +723,6 @@ async function triggerDownload(action, type, sheetName) {
         setTimeout(hideDownloadOverlay, 1500);
     }
 }
-        // Triggers a file download. Once the real Google file URL is resolved
-        // via fetch, a temporary link is clicked to request it. Google's export
-        // endpoint responds with Content-Disposition: attachment, so the browser
-        // just downloads the file and stays on this page — no new tab, no
-        // navigation away, and the script.google.com URL is never shown.
-      async function triggerDownload(action, type, sheetName) {
-    showDownloadOverlay(type);
-
-    try {
-        const directUrl = await resolveExportUrl(action, sheetName);
-        // Direct location change works reliably on both iOS and Android
-        window.location.href = directUrl;
-    } catch (err) {
-        console.error(err);
-        showPopup('Download failed. Please check your internet and try again!');
-    } finally {
-        setTimeout(hideDownloadOverlay, 1000);
-    }
-}
-
         searchInput.addEventListener('input', function(e) {
             const query = e.target.value.toLowerCase().trim();
             if (query === "") {

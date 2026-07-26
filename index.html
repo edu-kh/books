@@ -73,81 +73,6 @@
         }
         /* ------------------------- */
 
-        /* --- DOWNLOAD POPUP STYLES --- */
-        .download-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.55);
-            z-index: 10000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .download-box {
-            background: #ffffff;
-            border-radius: 18px;
-            padding: 35px 45px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.25);
-            animation: popIn 0.25s ease-out;
-            min-width: 240px;
-        }
-
-        @keyframes popIn {
-            from { transform: scale(0.85); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-
-        .download-icon-wrap {
-            position: relative;
-            width: 70px;
-            height: 70px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .download-icon-wrap i {
-            font-size: 2.2rem;
-            color: #3498db;
-            animation: bounceDown 1s infinite ease-in-out;
-            z-index: 2;
-        }
-
-        .download-icon-wrap::after {
-            content: '';
-            position: absolute;
-            bottom: 6px;
-            width: 70px;
-            height: 70px;
-            border: 5px solid #e0e0e0;
-            border-top: 5px solid #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes bounceDown {
-            0%, 100% { transform: translateY(-6px); opacity: 0.7; }
-            50% { transform: translateY(4px); opacity: 1; }
-        }
-
-        .download-text {
-            font-family: "Battambang", sans-serif;
-            color: #2c3e50;
-            font-size: 1.1rem;
-            font-weight: bold;
-            text-align: center;
-            animation: pulse 1.5s infinite ease-in-out;
-        }
-        /* ------------------------- */
-
         .hero {
             background-color: #2c3e50;
             color: white;
@@ -512,6 +437,97 @@
             margin-bottom: 20px;
             line-height: 1.5;
         }
+
+        /* --- DOWNLOAD OVERLAY STYLES --- */
+        .download-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 10001;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .download-box {
+            background: white;
+            padding: 30px 35px;
+            border-radius: 18px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+            text-align: center;
+            max-width: 320px;
+            width: 85%;
+            animation: slideIn 0.3s ease-out;
+            font-family: 'Battambang', sans-serif;
+        }
+
+        .download-icon-wrap {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 18px auto;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .download-icon-wrap.pdf {
+            background: #fde8e8;
+            color: #e74c3c;
+        }
+
+        .download-icon-wrap.excel {
+            background: #e6f4ea;
+            color: #1e8449;
+        }
+
+        .download-icon-wrap i {
+            font-size: 1.8rem;
+            animation: bounceDown 1s infinite ease-in-out;
+        }
+
+        @keyframes bounceDown {
+            0%, 100% { transform: translateY(-4px); opacity: 0.7; }
+            50% { transform: translateY(4px); opacity: 1; }
+        }
+
+        .download-box p {
+            font-size: 1.05rem;
+            color: #333;
+            margin: 0 0 16px 0;
+            font-weight: bold;
+        }
+
+        .download-progress-track {
+            width: 100%;
+            height: 8px;
+            background: #eee;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .download-progress-bar {
+            height: 100%;
+            width: 40%;
+            border-radius: 10px;
+            background: #3498db;
+            animation: progressSlide 1.1s infinite ease-in-out;
+        }
+
+        .download-progress-bar.pdf-color {
+            background: #e74c3c;
+        }
+
+        .download-progress-bar.excel-color {
+            background: #1e8449;
+        }
+
+        @keyframes progressSlide {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(250%); }
+        }
     </style>
 </head>
 <body>
@@ -522,16 +538,6 @@
         <div class="loader-text">សូមរង់ចាំ....</div>
     </div>
 
-    <!-- DOWNLOAD POPUP OVERLAY -->
-    <div id="downloadOverlay" class="download-overlay">
-        <div class="download-box">
-            <div class="download-icon-wrap">
-                <i class="fa-solid fa-download"></i>
-            </div>
-            <div class="download-text" id="downloadOverlayText">កំពុងទាញយក....</div>
-        </div>
-    </div>
-
     <!-- CUSTOM POPUP OVERLAY -->
     <div id="customPopup" class="popup-overlay">
         <div class="popup-box">
@@ -539,6 +545,21 @@
             <button class="btn save-btn" onclick="closePopup()">OK</button>
         </div>
     </div>
+
+    <!-- DOWNLOAD ANIMATION OVERLAY -->
+    <div id="downloadOverlay" class="download-overlay">
+        <div class="download-box">
+            <div id="downloadIconWrap" class="download-icon-wrap">
+                <i id="downloadIcon" class="fa-solid fa-file-arrow-down"></i>
+            </div>
+            <p id="downloadMessage">កំពុងទាញយក...</p>
+            <div class="download-progress-track">
+                <div id="downloadProgressBar" class="download-progress-bar"></div>
+            </div>
+        </div>
+    </div>
+
+
 
     <div class="hero">
         <h3>វិទ្យាល័យ ហ៊ុនសែន មិត្តភាព</h3>
@@ -580,41 +601,8 @@
             document.getElementById('customPopup').style.display = 'none';
         }
 
-        // Download popup (used for PDF/Excel export so no new tab / script URL is ever shown)
-        function showDownloadPopup(message) {
-            document.getElementById('downloadOverlayText').textContent = message;
-            document.getElementById('downloadOverlay').style.display = 'flex';
-        }
-
-        function hideDownloadPopup() {
-            document.getElementById('downloadOverlay').style.display = 'none';
-        }
-
-        function triggerHiddenDownload(url, message, hideDelay) {
-            showDownloadPopup(message);
-
-            fetch(url)
-                .then(function (res) { return res.json(); })
-                .then(function (data) {
-                    if (data && data.url) {
-                        // Navigating directly to a file with Content-Disposition:
-                        // attachment triggers a browser download in place —
-                        // it does not open a tab or change the visible page.
-                        window.location.href = data.url;
-                    } else {
-                        showPopup('មិនអាចទាញយកឯកសារបានទេ សូមព្យាយាមម្តងទៀត។');
-                    }
-                })
-                .catch(function () {
-                    showPopup('មានបញ្ហាក្នុងការទាញយកឯកសារ។');
-                })
-                .finally(function () {
-                    setTimeout(hideDownloadPopup, hideDelay || 1200);
-                });
-        }
-
         // 📍 REPLACE WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyR7t7vQV92HgziKsnZl7Plq22l3EQ8BBs6SS-jrY7SoxRiV-KNic2_s_NKTTtGoaDIYQ/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxiZXSY6CfzvXIVfpB8hXg8PNdtofMOktT6XFT4CfvW8JkJ8aP5FZeNlUqE9KMizb1NFg/exec";
 
         const subjects = [
             "ខ្មែរ(ខ្ចី)","ខ្មែរ(សង)", "គណិត(ខ្ចី)", "គណិត(សង)", "សិក្សាសង្គម(ខ្ចី)", "សិក្សាសង្គម(សង)", "វិទ្យាសាស្ត្រ(ខ្ចី)",
@@ -643,7 +631,7 @@
                     loader.style.opacity = '0';
                     setTimeout(() => {
                         loader.style.display = 'none';
-                    }, 300); // Wait for transition to complete
+                    }, 400); // Wait for transition to complete
                 }
             }
         }
@@ -657,6 +645,73 @@
         const saveBtn = document.getElementById('saveBtn');
         const pdfBtn = document.getElementById('pdfBtn');
         const excelBtn = document.getElementById('excelBtn');
+
+        // Download overlay elements
+        const downloadOverlay = document.getElementById('downloadOverlay');
+        const downloadIconWrap = document.getElementById('downloadIconWrap');
+        const downloadIcon = document.getElementById('downloadIcon');
+        const downloadMessage = document.getElementById('downloadMessage');
+        const downloadProgressBar = document.getElementById('downloadProgressBar');
+
+        function showDownloadOverlay(type) {
+            downloadIconWrap.classList.remove('pdf', 'excel');
+            downloadProgressBar.classList.remove('pdf-color', 'excel-color');
+
+            if (type === 'pdf') {
+                downloadIconWrap.classList.add('pdf');
+                downloadProgressBar.classList.add('pdf-color');
+                downloadIcon.className = 'fa-solid fa-file-pdf';
+                downloadMessage.textContent = 'កំពុងទាញយក PDF...';
+            } else {
+                downloadIconWrap.classList.add('excel');
+                downloadProgressBar.classList.add('excel-color');
+                downloadIcon.className = 'fa-solid fa-file-excel';
+                downloadMessage.textContent = 'កំពុងទាញយក Excel...';
+            }
+
+            downloadOverlay.style.display = 'flex';
+        }
+
+        function hideDownloadOverlay() {
+            downloadOverlay.style.display = 'none';
+        }
+
+        // Fetches the real docs.google.com export URL from Apps Script (returned
+        // as plain text via ContentService, which is CORS-friendly — same path
+        // that already works for the JSON data load).
+        async function resolveExportUrl(action, sheetName) {
+            const scriptUrl = `${WEB_APP_URL}?action=${action}&sheetName=${encodeURIComponent(sheetName)}`;
+            const response = await fetch(scriptUrl);
+            const url = (await response.text()).trim();
+            if (!url || !url.startsWith('http')) {
+                throw new Error('Could not resolve the download link.');
+            }
+            return url;
+        }
+
+        // Triggers a file download. Once the real Google file URL is resolved
+        // via fetch, a temporary link is clicked to request it. Google's export
+        // endpoint responds with Content-Disposition: attachment, so the browser
+        // just downloads the file and stays on this page — no new tab, no
+        // navigation away, and the script.google.com URL is never shown.
+        async function triggerDownload(action, type, sheetName) {
+            showDownloadOverlay(type);
+
+            try {
+                const directUrl = await resolveExportUrl(action, sheetName);
+                const link = document.createElement('a');
+                link.href = directUrl;
+                link.rel = 'noopener';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch (err) {
+                console.error(err);
+                showPopup('Download failed. Please check your internet and try again!');
+            } finally {
+                setTimeout(hideDownloadOverlay, 600);
+            }
+        }
 
         searchInput.addEventListener('input', function(e) {
             const query = e.target.value.toLowerCase().trim();
@@ -843,14 +898,12 @@
 
         pdfBtn.addEventListener('click', () => {
             if (!currentSelectedClass) return;
-            const exportUrl = `${WEB_APP_URL}?action=exportPdf&sheetName=${encodeURIComponent(currentSelectedClass)}`;
-            triggerHiddenDownload(exportUrl, 'កំពុងទាញយក PDF....');
+            triggerDownload('exportPdf', 'pdf', currentSelectedClass);
         });
 
         excelBtn.addEventListener('click', () => {
             if (!currentSelectedClass) return;
-            const exportUrl = `${WEB_APP_URL}?action=exportExcel&sheetName=${encodeURIComponent(currentSelectedClass)}`;
-            triggerHiddenDownload(exportUrl, 'កំពុងទាញយក Excel....');
+            triggerDownload('exportExcel', 'excel', currentSelectedClass);
         });
 
       saveBtn.addEventListener('click', async () => {

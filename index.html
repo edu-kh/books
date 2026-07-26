@@ -602,7 +602,7 @@
         }
 
         // 📍 REPLACE WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzDPMwLQKynHs3BIdSIN1WgPr7v3aVmJudCNs7DWE9OFvsXEHxocx5tJsy2peyM-W3ENw/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxbq7W__-sSBRaxouCn7oiOhUU6d_WWP3kSRAr-isr_SINGs-wtbwreDKmQLKuv9LxqEQ/exec";
 
         const subjects = [
             "ខ្មែរ(ខ្ចី)","ខ្មែរ(សង)", "គណិត(ខ្ចី)", "គណិត(សង)", "សិក្សាសង្គម(ខ្ចី)", "សិក្សាសង្គម(សង)", "វិទ្យាសាស្ត្រ(ខ្ចី)",
@@ -683,7 +683,6 @@ function isInAppBrowser() {
             ua.includes("Instagram"));
 }
 
-// Triggers direct browser file download from server Base64 bytes
 async function triggerDownload(action, type, sheetName) {
     showDownloadOverlay(type);
 
@@ -696,7 +695,7 @@ async function triggerDownload(action, type, sheetName) {
             throw new Error(data.error || 'Failed to generate file.');
         }
 
-        // Convert Base64 response into a Blob file
+        // Convert Base64 response into local file bytes
         const byteCharacters = atob(data.base64);
         const byteNumbers = new Array(byteCharacters.length);
         for (let i = 0; i < byteCharacters.length; i++) {
@@ -705,16 +704,16 @@ async function triggerDownload(action, type, sheetName) {
         const byteArray = new Uint8Array(byteNumbers);
         const blob = new Blob([byteArray], { type: data.mimeType });
 
-        // Trigger native file download popup
+        // Create local memory URL and trigger direct download
         const blobUrl = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = blobUrl;
-        a.download = data.fileName;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.href = blobUrl;
+        downloadAnchor.download = data.fileName;
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        document.body.removeChild(downloadAnchor);
 
-        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
 
     } catch (err) {
         console.error(err);

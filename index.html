@@ -168,7 +168,7 @@
         .student-panel {
             background: rgba(234, 233, 233, 0.97);
             width: 98%;
-            max-width: 1400px; 
+            max-width: 96%; 
             border-radius: 15px;
             box-shadow: 0 15px 35px rgba(0,0,0,0.2);
             overflow: hidden;
@@ -214,7 +214,7 @@
         .student-item {
             display: flex;
             align-items: center;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid  #275fae;;
             padding: 5px 4px;
             min-width: max-content;
         }
@@ -225,19 +225,24 @@
 
         /* Sticky Student Column */
         .student-info {
-            height: 60px;
+            height: 65px;
             display: flex;
             align-items: center;
-            width: 150px;
+            width: 8.8%;
             flex-shrink: 0;
             position: sticky;
             left: 0;
             background: rgb(236, 235, 235); 
             z-index: 2;
-            padding-right: 5px;
+            padding-right: 1px;
             box-shadow: 4px 0 6px -2px rgba(0,0,0,0.05);
             font-size: 0.9rem;
             border-radius: 6px;
+           
+        }
+        .student-info:hover{
+            width: 8.8%;
+            min-width: fit-content;
         }
 
         .student-item:hover .student-info {
@@ -245,15 +250,15 @@
         }
 
         .student-avatar {
-            width: 30px; height: 30px;
-            background: #eef7fe;
+            width: 20px; height: 25px;
+            
             color: #3498db;
-            border-radius: 50%;
+           
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-right: 3px;
             flex-shrink: 0;
+            
         }
 
         .student-name {
@@ -542,7 +547,7 @@
     <div id="customPopup" class="popup-overlay">
         <div class="popup-box">
             <p id="popupMessage"></p>
-            <button class="btn save-btn" onclick="closePopup()">OK</button>
+            <button class="btn save-btn" id="popupOkBtn" onclick="closePopup()">OK</button>
         </div>
     </div>
 
@@ -592,17 +597,23 @@
 
     <script>
         // Custom Pop-up Functions
-        function showPopup(message) {
+        function showPopup(message, refreshOnOk = false) {
             document.getElementById('popupMessage').textContent = message;
             document.getElementById('customPopup').style.display = 'flex';
+            document.getElementById('customPopup').dataset.refresh = refreshOnOk ? 'true' : 'false';
         }
 
         function closePopup() {
-            document.getElementById('customPopup').style.display = 'none';
+            const popup = document.getElementById('customPopup');
+            const shouldRefresh = popup.dataset.refresh === 'true';
+            popup.style.display = 'none';
+            if (shouldRefresh) {
+                location.reload();
+            }
         }
 
         // 📍 REPLACE WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxbq7W__-sSBRaxouCn7oiOhUU6d_WWP3kSRAr-isr_SINGs-wtbwreDKmQLKuv9LxqEQ/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw7GXyyS5oMYEeZ39Z-etK0NdRJJXCEwW8IYbmInL5p5USBNrWuLLtabmu8WHfydor8fQ/exec";
 
         const subjects = [
             "ខ្មែរ(ខ្ចី)","ខ្មែរ(សង)", "គណិត(ខ្ចី)", "គណិត(សង)", "សិក្សាសង្គម(ខ្ចី)", "សិក្សាសង្គម(សង)", "វិទ្យាសាស្ត្រ(ខ្ចី)",
@@ -624,7 +635,7 @@
                 console.log("Sheet data & attendance loaded successfully!");
             } catch (error) {
                 console.error("Error loading sheet data:", error);
-                showPopup("No internet🛜 Please check!");
+                showPopup("No internet🛜 Please check!", true);
             } finally {
                 // Hide loader once the data fetch is complete
                 if (loader) {
@@ -708,7 +719,10 @@ async function triggerDownload(action, type, sheetName) {
         const blobUrl = URL.createObjectURL(blob);
         const downloadAnchor = document.createElement('a');
         downloadAnchor.href = blobUrl;
-        downloadAnchor.download = data.fileName;
+        // Build file name as "Sheet Title - Sheet Tab.ext"
+        const extension = type === 'pdf' ? 'pdf' : 'xlsx';
+        const sheetTitle = document.title || 'Sheet';
+        downloadAnchor.download = `${sheetTitle} - ${sheetName}.${extension}`;
         document.body.appendChild(downloadAnchor);
         downloadAnchor.click();
         document.body.removeChild(downloadAnchor);
@@ -813,7 +827,8 @@ async function triggerDownload(action, type, sheetName) {
 
                     // Load saved status from local user changes OR database
                     if (attendanceData[currentSelectedClass][subject][studentId] === undefined) {
-                        const dbStatus = savedAttendanceObj[subject] || null;
+                        const rawStatus = savedAttendanceObj[subject];
+                        const dbStatus = (rawStatus === undefined || rawStatus === null || rawStatus === '') ? null : rawStatus;
                         attendanceData[currentSelectedClass][subject][studentId] = dbStatus;
                     }
 
@@ -868,7 +883,7 @@ async function triggerDownload(action, type, sheetName) {
                             select.appendChild(optChas);
                         }
 
-                        const selectStatus = currentStatus || 'null';
+                        const selectStatus = (currentStatus === null || currentStatus === undefined || currentStatus === '') ? 'null' : String(currentStatus);
                         select.value = selectStatus;
                         updateSelectColor(select, selectStatus);
 
@@ -944,7 +959,7 @@ async function triggerDownload(action, type, sheetName) {
             }
 
             saveBtn.disabled = true;
-            saveBtn.innerHTML = 'Saving... <i class="fa-solid fa-spinner fa-spin"></i>';
+            saveBtn.innerHTML = 'Saving <i class="fa-solid fa-spinner fa-spin"></i>';
 
             try {
                 const response = await fetch(WEB_APP_URL, {

@@ -617,7 +617,7 @@
 
         const subjects = [
             "ខ្មែរ(ខ្ចី)","ខ្មែរ(សង)", "គណិត(ខ្ចី)", "គណិត(សង)", "សិក្សាសង្គម(ខ្ចី)", "សិក្សាសង្គម(សង)", "វិទ្យាសាស្ត្រ(ខ្ចី)",
-            "វិទ្យាសាស្ត្រ(សង)",  "អង់គ្លេស(ខ្ចី)", "អង់គ្លេស(សង)","ផ្សេងៗ"
+            "វិទ្យាសាស្ត្រ(សង)",  "ភាសាបរទេស(ខ្ចី)", "ភាសាបរទេស(សង)","ផ្សេងៗ"
         ];
 
         let classes = [];
@@ -642,7 +642,7 @@
                     loader.style.opacity = '0';
                     setTimeout(() => {
                         loader.style.display = 'none';
-                    }, 200); // Wait for transition to complete
+                    }, 300); // Wait for transition to complete
                 }
             }
         }
@@ -733,7 +733,7 @@ async function triggerDownload(action, type, sheetName) {
         console.error(err);
         showPopup('Download failed. Please check your internet and try again!');
     } finally {
-        setTimeout(hideDownloadOverlay, 800);
+        setTimeout(hideDownloadOverlay, 1000);
     }
 }
         searchInput.addEventListener('input', function(e) {
@@ -805,6 +805,19 @@ async function triggerDownload(action, type, sheetName) {
                 nameSpan.className = 'student-name';
                 nameSpan.textContent = studentName;
 
+                if (studentName === "សរុបចំនួនខូច") {
+                    avatar.innerHTML = `
+                    <i class="fa-solid fa-book-skull"></i>
+                    `;
+                    nameSpan.style.fontSize = '1rem';
+                    nameSpan.style.color = 'red';
+                    nameSpan.style.width = '100px';
+                    nameSpan.style.overflow = 'visible';
+                    nameSpan.style.textOverflow = 'unset';
+                    infoDiv.style.width = '100px';
+                    infoDiv.style.minWidth = 'fit-content';
+                }
+
                 infoDiv.appendChild(avatar);
                 infoDiv.appendChild(nameSpan);
                 studentDiv.appendChild(infoDiv);
@@ -813,7 +826,15 @@ async function triggerDownload(action, type, sheetName) {
                 const subjectsContainer = document.createElement('div');
                 subjectsContainer.className = 'subjects-container';
 
+                // Special row: "សរុបចំនួនខូច" only tracks broken/damaged counts for (សង) subjects
+                const isDamagedSummaryRow = studentName === "សរុបចំនួនខូច";
+
                 subjects.forEach(subject => {
+                    // Hide (ខ្ចី) and ផ្សេងៗ subjects entirely for the damaged-summary row
+                    if (isDamagedSummaryRow && (subject.includes('(ខ្ចី)') || subject === "ផ្សេងៗ")) {
+                        return;
+                    }
+
                     if (!attendanceData[currentSelectedClass][subject]) {
                         attendanceData[currentSelectedClass][subject] = {};
                     }
@@ -841,6 +862,22 @@ async function triggerDownload(action, type, sheetName) {
                         input.className = 'attendance-input';
                         input.placeholder = 'បញ្ចូល...';
                         input.value = currentStatus || '';
+
+                        input.addEventListener('input', (e) => {
+                            const val = e.target.value.trim();
+                            attendanceData[currentSelectedClass][subject][studentId] = (val === '') ? null : val;
+                        });
+
+                        subjectBlock.appendChild(subjectLabel);
+                        subjectBlock.appendChild(input);
+                    } else if (isDamagedSummaryRow && subject.includes('(សង)')) {
+                        // Damaged-summary row: (សង) subjects become a number input instead of a select
+                        const input = document.createElement('input');
+                        input.type = 'number';
+                        input.className = 'attendance-input';
+                        input.placeholder = 'ចំនួនខូច';
+                        input.min = '0';
+                        input.value = (currentStatus === null || currentStatus === undefined || currentStatus === '') ? '' : currentStatus;
 
                         input.addEventListener('input', (e) => {
                             const val = e.target.value.trim();

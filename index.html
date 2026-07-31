@@ -103,7 +103,7 @@
 
         #searchInput {
             width: 90%;
-            padding: 16px 25px;
+            padding: 16px 25px 16px 50px;
             font-size: 1.1rem;
             border: 2px solid #e0e0e0;
             border-radius: 30px;
@@ -115,6 +115,21 @@
         #searchInput:focus {
             border-color: #3498db;
             box-shadow: 0 10px 25px rgba(52, 152, 219, 0.2);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 22px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9aa0a6;
+            font-size: 1.1rem;
+            pointer-events: none;
+            transition: color 0.3s ease;
+        }
+
+        #searchInput:focus ~ .search-icon {
+            color: #3498db;
         }
 
         #resultsContainer {
@@ -221,6 +236,20 @@
 
         .student-item:hover {
             background-color: #b8cde1;
+        }
+
+        /* Sticky Last Row (summary row) at bottom of scroll area */
+        .student-item.sticky-bottom {
+            position: sticky;
+            left: 0;
+            bottom: 0;
+            z-index: 3;
+            background: rgb(236, 235, 235);
+            box-shadow: 0 -4px 6px -2px rgba(0,0,0,0.08);
+        }
+
+        .student-item.sticky-bottom .student-info {
+            background: rgb(236, 235, 235);
         }
 
         /* Sticky Student Column */
@@ -573,6 +602,7 @@
 
     <div class="search-container">
         <input type="text" id="searchInput" placeholder="ស្វែងរកថ្នាក់ 7A, 7B,...">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
     </div>
 
     <div id="resultsContainer"></div>
@@ -775,7 +805,13 @@ async function triggerDownload(action, type, sheetName) {
 
         function renderStudentList() {
             studentListContainer.innerHTML = '';
-            const students = studentData[currentSelectedClass] || [];
+            const students = [...(studentData[currentSelectedClass] || [])].sort((a, b) => {
+                const aIsSummary = a.name === "សរុបចំនួនខូច";
+                const bIsSummary = b.name === "សរុបចំនួនខូច";
+                if (aIsSummary && !bIsSummary) return 1;
+                if (!aIsSummary && bIsSummary) return -1;
+                return 0;
+            });
 
             if (!attendanceData[currentSelectedClass]) {
                 attendanceData[currentSelectedClass] = {};
@@ -806,6 +842,7 @@ async function triggerDownload(action, type, sheetName) {
                 nameSpan.textContent = studentName;
 
                 if (studentName === "សរុបចំនួនខូច") {
+                    studentDiv.classList.add('sticky-bottom');
                     avatar.innerHTML = `
                     <i class="fa-solid fa-book-skull"></i>
                     `;

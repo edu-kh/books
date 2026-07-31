@@ -202,7 +202,7 @@
         .panel-header {
             background: #3498db;
             color: white;
-            padding: 18px 25px;
+            padding: 8px 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -241,7 +241,6 @@
         /* Sticky Last Row (summary row) at bottom of scroll area */
         .student-item.sticky-bottom {
             position: sticky;
-            left: 0;
             bottom: 0;
             z-index: 3;
             background: rgb(236, 235, 235);
@@ -383,7 +382,7 @@
         }
 
         .panel-footer {
-            padding: 15px 25px;
+            padding: 8px 12px;
             background: #f8f9fa;
             border-top: 1px solid #e0e0e0;
             display: flex;
@@ -869,6 +868,20 @@ async function triggerDownload(action, type, sheetName) {
                 subjects.forEach(subject => {
                     // Hide (ខ្ចី) and ផ្សេងៗ subjects entirely for the damaged-summary row
                     if (isDamagedSummaryRow && (subject.includes('(ខ្ចី)') || subject === "ផ្សេងៗ")) {
+                        const placeholder = document.createElement('div');
+                        placeholder.className = 'subject-attendance subject-placeholder';
+                        placeholder.style.visibility = 'hidden';
+
+                        const placeholderLabel = document.createElement('span');
+                        placeholderLabel.className = 'subject-label';
+                        placeholderLabel.textContent = subject;
+                        placeholder.appendChild(placeholderLabel);
+
+                        const placeholderFiller = document.createElement('select');
+                        placeholderFiller.className = 'attendance-select';
+                        placeholder.appendChild(placeholderFiller);
+
+                        subjectsContainer.appendChild(placeholder);
                         return;
                     }
 

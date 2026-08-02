@@ -214,9 +214,20 @@
         }
 
         .close-btn {
+            background-color: #f36454ea;
             font-size: 2rem;
             cursor: pointer;
             line-height: 1;
+            border-radius: 15px;
+            height: 36px;
+           width: 25px;
+           
+          
+        }
+        .close-btn:hover{
+            color: #f36454ea;
+            background-color:whitesmoke ;
+            
         }
 
         .panel-content {
@@ -607,15 +618,15 @@
         <div class="student-panel">
             <div class="panel-header">
                 <h2 id="panelClassTitle">Class Roster</h2>
-                <span class="close-btn" id="closePanelBtn">&times;</span>
+                <span class="close-btn" id="closePanelBtn" title="Close">&times;</span>
             </div>
 
             <div class="panel-content" id="studentListContainer"></div>
 
             <div class="panel-footer">
-                <button class="btn pdf-btn" id="pdfBtn">PDF <i class="fa-solid fa-file-pdf"></i></button>
-                <button class="btn excel-btn" id="excelBtn">Excel <i class="fa-solid fa-file-excel"></i></button>
-                <button class="btn save-btn" id="saveBtn">Save <i class="fa-solid fa-book"></i></button>
+                <button class="btn pdf-btn" id="pdfBtn" title="Download">PDF <i class="fa-solid fa-file-pdf"></i></button>
+                <button class="btn excel-btn" id="excelBtn" title="Download">Excel <i class="fa-solid fa-file-excel"></i></button>
+                <button class="btn save-btn" id="saveBtn" >Save <i class="fa-solid fa-book"></i></button>
             </div>
         </div>
     </div>
